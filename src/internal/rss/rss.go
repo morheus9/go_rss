@@ -42,6 +42,11 @@ func (r *RSS) ProcessItem(item *gofeed.Item) {
 	content = strings.ReplaceAll(content, "&#8221", "\"")
 	content = strings.ReplaceAll(content, "&#8217", "'")
 	content = strings.ReplaceAll(content, "&#8216", "'")
+	content = strings.ReplaceAll(content, "&amp;", "&")
+	content = strings.ReplaceAll(content, "~", " ")
+	content = strings.ReplaceAll(content, "…", "...")
+	content = strings.ReplaceAll(content, "pic.twitter.com/", "")
+
 	re := regexp.MustCompile(`<.*?>`)
 	content = re.ReplaceAllString(content, "")
 	// Удалить пустые строки

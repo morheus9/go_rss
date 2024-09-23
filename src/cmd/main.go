@@ -3,9 +3,8 @@ package main
 import (
 	"log"
 
-	"src/rss"
-
-	"src/config"
+	"github.com/morheus9/go_rss/src/internal/config"
+	"github.com/morheus9/go_rss/src/internal/rss"
 )
 
 func main() {
