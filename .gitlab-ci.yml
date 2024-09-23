@@ -1,0 +1,39 @@
+image: golang:latest
+
+stages:
+  - 🐳publish
+  - 🧪tests
+  - 📦deploy
+
+variables:
+  DOCKER_TLS_CERTDIR: ""
+  GO_EXAMPLE_IMAGE: $CI_REGISTRY_IMAGE:go_example_$CI_COMMIT_SHORT_SHA
+  GO_EXAMPLE_LATEST: $CI_REGISTRY_IMAGE:go_example_latest
+
+test:
+  stage: 🧪tests
+  script:
+    - go fmt $(go list ./... | grep -v /vendor/)
+    - go vet $(go list ./... | grep -v /vendor/)
+    - go test -race $(go list ./... | grep -v /vendor/)
+
+publish:
+  stage: 🐳publish
+  image: docker:dind
+  services:
+    - docker:dind
+  before_script:
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin
+  script:
+    - docker build -t $GO_EXAMPLE_LATEST -t $GO_EXAMPLE_IMAGE .
+    - docker push $GO_EXAMPLE_LATEST
+    - docker push $GO_EXAMPLE_IMAGE
+  tags:
+    - docker
+  only:
+    - main
+
+deploy:
+  stage: 📦deploy
+  script: echo "Define your deployment script!"
+  environment: production
