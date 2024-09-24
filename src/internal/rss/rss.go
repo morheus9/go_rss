@@ -1,7 +1,6 @@
 package rss
 
 import (
-	"fmt"
 	"regexp"
 	"strings"
 
@@ -22,15 +21,19 @@ func (r *RSS) ParseURL(url string) (*gofeed.Feed, error) {
 	return r.Parser.ParseURL(url)
 }
 
-func (r *RSS) ProcessItem(item *gofeed.Item) {
-	fmt.Println("______________________________________")
-	fmt.Println("Заголовок:", item.Title)
-	fmt.Println("Описание:", item.Description)
+type ItemData struct {
+	Title       string
+	Description string
+	Date        string
+	Content     string
+	Link        string
+}
 
-	date := item.Published
-	date = strings.Replace(date, "+0000", "", 1)
-	fmt.Println("Дата:", date)
-
+func (r *RSS) ProcessItem(item *gofeed.Item) ItemData {
+	var data ItemData
+	data.Title = item.Title
+	data.Description = item.Description
+	data.Date = strings.TrimSuffix(item.Published, "+0000")
 	content := strings.ReplaceAll(item.Content, "<p>", "\n\n")
 	// Удаляем HTML-теги
 	content = strings.ReplaceAll(content, "</p>", "")
@@ -46,20 +49,18 @@ func (r *RSS) ProcessItem(item *gofeed.Item) {
 	content = strings.ReplaceAll(content, "~", " ")
 	content = strings.ReplaceAll(content, "…", "...")
 	content = strings.ReplaceAll(content, "pic.twitter.com/", "")
-
 	re := regexp.MustCompile(`<.*?>`)
 	content = re.ReplaceAllString(content, "")
 	// Удалить пустые строки
 	lines := strings.Split(content, "\n")
-	var result []string
+	var resultContent []string
 	for _, line := range lines {
 		if line != "" {
-			result = append(result, line)
+			resultContent = append(resultContent, line)
 		}
 	}
-	content = strings.Join(result, "\n\n")
-	fmt.Println("Контент:", content)
-
-	fmt.Println("Ссылка:", item.Link)
-	fmt.Println("______________________________________")
+	content = strings.Join(resultContent, "\n\n")
+	data.Content = content
+	data.Link = item.Link
+	return data
 }

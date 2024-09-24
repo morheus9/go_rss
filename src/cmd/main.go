@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/morheus9/go_rss/src/internal/config"
@@ -26,6 +27,11 @@ func main() {
 
 	// Обрабатываем элементы RSS
 	for _, item := range feed.Items {
-		rss.ProcessItem(item)
+		data := rss.ProcessItem(item)
+		fmt.Printf("TITLE: %s\n", data.Title)
+		fmt.Printf("DESCRIPTION: %s\n", data.Description)
+		fmt.Printf("DATE: %s\n", data.Date)
+		fmt.Printf("CONTENT: %s\n", data.Content)
+		fmt.Printf("LINK: %s\n", data.Link)
 	}
 }
