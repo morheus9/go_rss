@@ -1,9 +1,11 @@
 package rss
 
 import (
+	"html"
 	"regexp"
 	"strings"
 
+	"github.com/PuerkitoBio/goquery"
 	"github.com/mmcdole/gofeed"
 )
 
@@ -29,38 +31,56 @@ type ItemData struct {
 	Link        string
 }
 
-func (r *RSS) ProcessItem(item *gofeed.Item) ItemData {
-	var data ItemData
-	data.Title = item.Title
-	data.Description = item.Description
-	data.Date = strings.TrimSuffix(item.Published, "+0000")
-	content := strings.ReplaceAll(item.Content, "<p>", "\n\n")
-	// Удаляем HTML-теги
-	content = strings.ReplaceAll(content, "</p>", "")
-	content = strings.ReplaceAll(content, "<em>", "")
-	content = strings.ReplaceAll(content, "</em>", "")
-	content = strings.ReplaceAll(content, "<a>", "")
-	content = strings.ReplaceAll(content, "</a>", "")
-	content = strings.ReplaceAll(content, "&#8220", "\"")
-	content = strings.ReplaceAll(content, "&#8221", "\"")
-	content = strings.ReplaceAll(content, "&#8217", "'")
-	content = strings.ReplaceAll(content, "&#8216", "'")
-	content = strings.ReplaceAll(content, "&amp;", "&")
-	content = strings.ReplaceAll(content, "~", " ")
-	content = strings.ReplaceAll(content, "…", "...")
-	content = strings.ReplaceAll(content, "pic.twitter.com/", "")
-	re := regexp.MustCompile(`<.*?>`)
-	content = re.ReplaceAllString(content, "")
+// Удаляет HTML-теги и заменяет специальные символы
+func cleanContent(input string) string {
+	// Удаляем теги <strong> и их содержимое
+	re := regexp.MustCompile(`<strong>.*?</strong>`)
+	input = re.ReplaceAllString(input, "")
+
+	// Удаляем все блоки, связанные с Twitter
+	reTwitterBlock := regexp.MustCompile(`<figure.*?>.*?</figure>`)
+	input = reTwitterBlock.ReplaceAllString(input, "")
+
+	// Удаляем все содержимое внутри тегов <a href="...">...</a>
+	reLinks := regexp.MustCompile(`<a[^>]*>.*?</a>`)
+	input = reLinks.ReplaceAllString(input, "")
+
+	// Удаляем все блоки <figure> и их содержимое
+	reFigureBlock := regexp.MustCompile(`(?s)<figure.*?>.*?</figure>`)
+	input = reFigureBlock.ReplaceAllString(input, "")
+
+	// Используем goquery для парсинга HTML
+	doc, err := goquery.NewDocumentFromReader(strings.NewReader(input))
+	if err != nil {
+		return input // Возвращаем исходный текст в случае ошибки
+	}
+
+	// Получаем текст без HTML-тегов
+	cleaned := doc.Find("body").Text()
+
+	// Декодируем HTML-сущности
+	cleaned = html.UnescapeString(cleaned)
+
 	// Удалить пустые строки
-	lines := strings.Split(content, "\n")
+	lines := strings.Split(cleaned, "\n")
 	var resultContent []string
 	for _, line := range lines {
 		if line != "" {
 			resultContent = append(resultContent, line)
 		}
 	}
-	content = strings.Join(resultContent, "\n\n")
-	data.Content = content
-	data.Link = item.Link
-	return data
+	cleaned = strings.Join(resultContent, "\n\n")
+
+	return cleaned
+}
+
+// Обрабатывает элемент RSS
+func (r *RSS) ProcessItem(item *gofeed.Item) ItemData {
+	return ItemData{
+		Title:       item.Title,
+		Description: item.Description,
+		Date:        strings.TrimSuffix(item.Published, "+0000"),
+		Content:     cleanContent(item.Content),
+		Link:        item.Link,
+	}
 }
