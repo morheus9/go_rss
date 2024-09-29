@@ -28,9 +28,9 @@ func main() {
 	// Обрабатываем элементы RSS
 	for _, item := range feed.Items {
 		data := rss.ProcessItem(item)
+		fmt.Printf("DATE: %s\n", data.Date)
 		fmt.Printf("TITLE: %s\n", data.Title)
 		fmt.Printf("DESCRIPTION: %s\n", data.Description)
-		fmt.Printf("DATE: %s\n", data.Date)
 		fmt.Printf("CONTENT: %s\n", data.Content)
 		fmt.Printf("LINK: %s\n", data.Link)
 	}
