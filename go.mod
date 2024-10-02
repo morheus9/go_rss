@@ -5,6 +5,7 @@ go 1.23.1
 require (
 	github.com/PuerkitoBio/goquery v1.10.0
 	github.com/mmcdole/gofeed v1.3.0
+	gopkg.in/telebot.v3 v3.3.8
 )
 
 require (
