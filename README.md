@@ -1,3 +1,3 @@
-# Golang telegram bot
+# Golang rss parser
 ## 
 
