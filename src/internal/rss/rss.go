@@ -32,11 +32,11 @@ type ItemData struct {
 }
 
 // Удаляет HTML-теги и заменяет специальные символы, возвращает только первый непустой параграф
-func cleanContent(input string) string {
+func cleanContent(input string) (string, error) {
 	// Используем goquery для парсинга HTML
 	doc, err := goquery.NewDocumentFromReader(strings.NewReader(input))
 	if err != nil {
-		return "" // Возвращаем пустую строку в случае ошибки
+		return "", err // Возвращаем ошибку в случае ошибки
 	}
 
 	// Получаем текст без HTML-тегов
@@ -48,11 +48,11 @@ func cleanContent(input string) string {
 	for _, paragraph := range paragraphs {
 		trimmed := strings.TrimSpace(paragraph)
 		if trimmed != "" {
-			return trimmed // Возвращаем первый непустой параграф
+			return trimmed, nil // Возвращаем первый непустой параграф
 		}
 	}
 
-	return "" // Если нет непустых параграфов, возвращаем пустую строку
+	return "", nil // Если нет непустых параграфов, возвращаем пустую строку
 }
 
 // Удаляет пустые строки из текста
@@ -70,8 +70,11 @@ func cleanDescription(input string) string {
 }
 
 // Обрабатывает элемент RSS
-func (r *RSS) ProcessItem(item *gofeed.Item) ItemData {
-	cleanedContent := cleanContent(item.Content) // Очищаем контент и получаем первый параграф
+func (r *RSS) ProcessItem(item *gofeed.Item) (ItemData, error) {
+	cleanedContent, err := cleanContent(item.Content) // Очищаем контент и получаем первый параграф
+	if err != nil {
+		return ItemData{}, err // Возвращаем ошибку, если она произошла
+	}
 	cleanedDescription := cleanDescription(item.Description)
 	return ItemData{
 		Date:        strings.TrimSuffix(item.Published, "+0000"),
@@ -79,5 +82,5 @@ func (r *RSS) ProcessItem(item *gofeed.Item) ItemData {
 		Description: cleanedDescription,
 		Content:     cleanedContent,
 		Link:        item.Link,
-	}
+	}, nil
 }

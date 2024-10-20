@@ -10,28 +10,34 @@ import (
 
 func main() {
 	// Загрузка конфига
-
 	cfg, err := config.LoadConfig("config.json")
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	// Создаем новый парсер RSS
-	rss := rss.NewRSS()
+	rssParser := rss.NewRSS()
 
 	// Парсим RSS
-	feed, err := rss.ParseURL(cfg.FeedURL)
-	if err != nil {
-		log.Fatal(err)
-	}
+	// Обрабатываем каждый URL в FeedURL
+	for _, url := range cfg.FeedURL {
+		feed, err := rssParser.ParseURL(url)
+		if err != nil {
+			log.Printf("Error parsing URL %s: %v\n", url, err)
+			continue
+		}
 
-	// Обрабатываем элементы RSS
-	for _, item := range feed.Items {
-		data := rss.ProcessItem(item)
-		fmt.Printf("DATE: %s\n", data.Date)
-		fmt.Printf("TITLE: %s\n", data.Title)
-		fmt.Printf("DESCRIPTION: %s\n", data.Description)
-		fmt.Printf("CONTENT: %s\n", data.Content)
-		fmt.Printf("LINK: %s\n", data.Link)
+		// Обрабатываем элементы RSS
+		for _, item := range feed.Items {
+			data, err := rssParser.ProcessItem(item)
+			if err != nil {
+				log.Printf("Error processing item: %v\n", err)
+				continue
+			}
+			fmt.Printf("DATE: %s\n", data.Date)
+			fmt.Printf("TITLE: %s\n", data.Title)
+			fmt.Printf("DESCRIPTION: %s\n", data.Description)
+			fmt.Printf("LINK: %s\n", data.Link)
+		}
 	}
 }

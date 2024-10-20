@@ -6,7 +6,7 @@ import (
 )
 
 type Config struct {
-	FeedURL string `json:"feed_url"`
+	FeedURL []string `json:"FeedURL"`
 }
 
 func LoadConfig(filename string) (*Config, error) {

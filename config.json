@@ -1,3 +1,7 @@
 {
-    "feed_url": "https://europeanconservative.com/rss"
+    "FeedURL": [
+        "https://www.economist.com/europe/rss.xml",
+        "https://www.economist.com/china/rss.xml",
+        "https://www.economist.com/finance-and-economics/rss.xml"
+    ]
 }
