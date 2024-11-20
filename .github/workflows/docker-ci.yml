@@ -39,6 +39,6 @@ jobs:
           file: ./Dockerfile
           push: true
           tags: |
-            ${{ secrets.USERNAME }}/rss:latest
-            ${{ secrets.USERNAME }}/rss:${{ github.sha }}
+            morheus/rss:latest
+            morheus/rss:${{ github.sha }}
           labels: ${{ steps.meta.outputs.labels }}
