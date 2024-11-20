@@ -7,7 +7,7 @@ WORKDIR /app/src/cmd
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o main .
 RUN chown 1001:1001 ./main && chmod 700 ./main
 
-FROM gcr.io/distroless/base
+FROM scratch
 WORKDIR /app
 COPY --from=builder /app/src/cmd/main .
 # EXPOSE 8080
